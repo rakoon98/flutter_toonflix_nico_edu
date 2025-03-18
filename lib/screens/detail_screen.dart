@@ -26,20 +26,23 @@ class DetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                height: 250,
-                clipBehavior: Clip.hardEdge,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 15,
-                      offset: Offset(10, 10),
-                      color: Colors.black38,
-                    ),
-                  ],
+              Hero(
+                tag: webtoonModel.id,
+                child: Container(
+                  height: 250,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 15,
+                        offset: Offset(10, 10),
+                        color: Colors.black38,
+                      ),
+                    ],
+                  ),
+                  child: Image.network(webtoonModel.thumb),
                 ),
-                child: Image.network(webtoonModel.thumb),
               ),
             ],
           ),
