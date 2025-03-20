@@ -4,8 +4,7 @@ import 'package:flutter_toonflix_nico_edu/models/webtoon_episode_model.dart';
 import 'package:flutter_toonflix_nico_edu/models/webtoon_model.dart';
 import 'package:flutter_toonflix_nico_edu/services/api_services.dart';
 import 'package:flutter_toonflix_nico_edu/widgets/episode_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DetailScreen extends StatefulWidget {
   final WebtoonModel webtoonModel;
@@ -19,14 +18,49 @@ class _DetailScreenState extends State<DetailScreen> {
   late Future<WebtoonDetailModel> webtoon;
   late Future<List<WebtoonEpisodeModel>> episodes;
 
+  late SharedPreferences pref;
+  bool isLiked = false;
+  final String LIKE_TOONS_KEY = 'likeToons';
+
+  Future initPref() async {
+    pref = await SharedPreferences.getInstance();
+    final likedToons = pref.getStringList(LIKE_TOONS_KEY);
+
+    if (likedToons != null) {
+      setState(() {
+        isLiked = likedToons.contains(widget.webtoonModel.id) == true;
+      });
+    } else {
+      await pref.setStringList(LIKE_TOONS_KEY, []);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     webtoon = ApiServices.getToonById(widget.webtoonModel.id);
     episodes = ApiServices.getLatestEpisodesById(widget.webtoonModel.id);
+
+    initPref();
   }
 
-  
+  onHeartTap() async {
+    final likedToons = pref.getStringList(LIKE_TOONS_KEY);
+    
+    if(likedToons != null) {
+      if(isLiked) {
+        likedToons.remove(widget.webtoonModel.id);
+      } else {
+        likedToons.add(widget.webtoonModel.id);
+      }
+
+      await pref.setStringList(LIKE_TOONS_KEY, likedToons);
+
+      setState(() {
+        isLiked = !isLiked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +71,12 @@ class _DetailScreenState extends State<DetailScreen> {
         elevation: 1, // 앱바의 음영
         backgroundColor: Colors.white,
         foregroundColor: Colors.green,
+        actions: [
+          IconButton(
+            onPressed: onHeartTap,
+            icon: Icon(isLiked ? Icons.favorite : Icons.favorite_outline),
+          ),
+        ],
         title: Text(
           widget.webtoonModel.title,
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
@@ -100,18 +140,18 @@ class _DetailScreenState extends State<DetailScreen> {
                   if (snapshot.hasData) {
                     var data = snapshot.data!;
                     var list = data.take(10);
-                    
+
                     return Column(
                       children: [
                         for (var episode in list)
                           EpisodeWiget(
                             episode: episode,
-                            webtoonId: widget.webtoonModel.id
+                            webtoonId: widget.webtoonModel.id,
                           ),
                       ],
                     );
                   }
-        
+
                   return Container();
                 },
               ),
@@ -122,5 +162,3 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 }
-
-
