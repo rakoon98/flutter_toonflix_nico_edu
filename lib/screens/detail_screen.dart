@@ -3,6 +3,9 @@ import 'package:flutter_toonflix_nico_edu/models/webtoon_detail_model.dart';
 import 'package:flutter_toonflix_nico_edu/models/webtoon_episode_model.dart';
 import 'package:flutter_toonflix_nico_edu/models/webtoon_model.dart';
 import 'package:flutter_toonflix_nico_edu/services/api_services.dart';
+import 'package:flutter_toonflix_nico_edu/widgets/episode_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class DetailScreen extends StatefulWidget {
   final WebtoonModel webtoonModel;
@@ -22,6 +25,8 @@ class _DetailScreenState extends State<DetailScreen> {
     webtoon = ApiServices.getToonById(widget.webtoonModel.id);
     episodes = ApiServices.getLatestEpisodesById(widget.webtoonModel.id);
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -93,27 +98,15 @@ class _DetailScreenState extends State<DetailScreen> {
                 future: episodes,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    var data = snapshot.data!;
+                    var list = data.take(10);
+                    
                     return Column(
                       children: [
-                        for (var episode in snapshot.data!)
-                          Container(
-                            margin: EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: Colors.green.shade400,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(episode.title, style: TextStyle(
-                                    color: Colors.white
-                                  )),
-                                  Icon(Icons.chevron_right_rounded, color: Colors.white),
-                                ],
-                              ),
-                            ),
+                        for (var episode in list)
+                          EpisodeWiget(
+                            episode: episode,
+                            webtoonId: widget.webtoonModel.id
                           ),
                       ],
                     );
@@ -129,3 +122,5 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 }
+
+
